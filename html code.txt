@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Text Encryption and Decryption using TripleDES</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: url('https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDEwfHxjeWJlcnNlY3VyaXR5fGVufDB8fHx8MTY0MzE3Mzg4OA&ixlib=rb-1.2.1&q=80&w=1080') no-repeat center center fixed;
+            background-size: cover;
+            color: #D8BFD8; /* Light purple text color */
+        }
+        input[type="file"], input[type="text"], input[type="password"] {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #DDA0DD; /* Pale violet border */
+            width: 80%;
+            max-width: 400px;
+            background-color: #F8F8FF; /* Ghost white background */
+        }
+        img {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #800080; /* Purple button background */
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4B0082; /* Indigo button background on hover */
+        }
+        a {
+            display: block;
+            margin: 20px auto;
+            text-decoration: none;
+            color: white;
+            background-color: #800080; /* Purple link background */
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        a:hover {
+            background-color: #4B0082; /* Indigo link background on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Text Encryption and Decryption using TripleDES</h1>
+    <input type="file" id="inputImage" accept="image/*">
+    <input type="text" id="inputText" placeholder="Enter text to encrypt">
+    <input type="password" id="encryptPassword" placeholder="Enter encryption password">
+    <button onclick="encryptAndEmbedText()">Encrypt and Embed Text</button>
+    <input type="password" id="decryptPassword" placeholder="Enter decryption password">
+    <button onclick="retrieveAndDecryptText()">Retrieve and Decrypt Text</button>
+    <br>
+    <img id="outputImage" src="" alt="Output Image">
+    <a id="downloadLink" href="#" download="encrypted_image.png" style="display:none;">Download Encrypted Image</a>
+    
+    <!-- Including CryptoJS library for encryption and decryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        let encryptionPassword = ''; // Store encryption password globally
+
+        function encryptAndEmbedText() {
+            const fileInput = document.getElementById('inputImage');
+            const textInput = document.getElementById('inputText').value;
+            const encryptPasswordInput = document.getElementById('encryptPassword').value;
+            const file = fileInput.files[0];
+
+            if (!file || !textInput || !encryptPasswordInput) {
+                alert('Please select an image file, enter text, and provide an encryption password.');
+                return;
+            }
+
+            // Store encryption password globally
+            encryptionPassword = encryptPasswordInput;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageData = event.target.result;
+
+                // Encrypt the text using TripleDES
+                const encryptedText = CryptoJS.TripleDES.encrypt(textInput, encryptionPassword).toString();
+
+                // Display the image and set the encrypted text in the alt attribute
+                const outputImage = document.getElementById('outputImage');
+                outputImage.src = imageData;
+                outputImage.alt = encryptedText;
+
+                // Create a downloadable link for the image
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = imageData;
+                downloadLink.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function retrieveAndDecryptText() {
+            const outputImage = document.getElementById('outputImage');
+            const encryptedText = outputImage.alt;
+            const decryptionPassword = document.getElementById('decryptPassword').value;
+
+            if (!encryptedText) {
+                alert('No encrypted text found. Please encrypt and embed text first.');
+                return;
+            }
+
+            // Check if decryption password matches encryption password
+            if (decryptionPassword !== encryptionPassword) {
+                alert('Incorrect password. Decryption canceled.');
+                return;
+            }
+
+            // Decrypt the text using TripleDES
+            const decryptedText = CryptoJS.TripleDES.decrypt(encryptedText, decryptionPassword).toString(CryptoJS.enc.Utf8);
+            alert('Decrypted text: ' + decryptedText);
+        }
+    </script>
+</body>
+</html>
